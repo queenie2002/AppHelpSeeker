@@ -20,7 +20,25 @@ public class SignUp {
     @POST
     @Path("user")
     @Produces(MediaType.TEXT_PLAIN)
-    public String getLongueur(@QueryParam("name") String name, @QueryParam("pwd") String pwd, @QueryParam("role") String role) {
+    public String addUser(@QueryParam("name") String name, @QueryParam("pwd") String pwd, @QueryParam("role") String role) throws Exception {
+    	switch(role.toLowerCase()) {
+    	  case "bénévole":
+    	    // code block
+    		  
+    		  
+    	    break;
+    	  case "helpSeeker":
+    	    // code block
+    	    break;
+    	  case "valideur":
+    		//code block
+    		break;
+    	  default:
+    		  throw new Exception("rôle invalide de l'utilisateur : " + name);
+    	}
+
+    	
+    	
         return "signed up: " + name + " with pwd: " + pwd + " as : " + role;
     }
     
