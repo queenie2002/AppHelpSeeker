@@ -21,17 +21,17 @@ public class InterfaceSQL {
         return conn;   
     }
     @WebMethod(operationName="ExecuteQuery")
-    public ResultSet ExecuteQuery(@WebParam(name="query") String query) throws SQLException{
+    public void ExecuteQuery(@WebParam(name="query") String query) throws SQLException{
     	Connection db = Connect();
     	Statement stm = db.createStatement();
-    	return stm.executeQuery(query);
+    	ResultSet rs = stm.executeQuery(query);
     }
     
     @WebMethod(operationName="ExecuteUpdate")
-    public int ExecuteUpdate(@WebParam(name="update") String update) throws SQLException{
+    public void ExecuteUpdate(@WebParam(name="update") String update) throws SQLException{
     	Connection db = Connect();
     	Statement stm = db.createStatement();
-    	return stm.executeUpdate(update);
+    	stm.executeUpdate(update);
     }
    
 }
