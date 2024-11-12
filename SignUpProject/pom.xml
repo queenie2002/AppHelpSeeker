@@ -10,6 +10,16 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>SignUpProject</name>
 
+	<properties>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java.version>17</java.version>
+		<cxf.version>3.4.2</cxf.version>
+		<jersey.version>4.0.0-M1</jersey.version>
+		<war.mvn.plugin.version>3.4.0</war.mvn.plugin.version>
+	</properties>
+
 	<build>
 		<finalName>SignUpProject</finalName>
 		<plugins>
@@ -28,8 +38,38 @@
 				<artifactId>maven-war-plugin</artifactId>
 				<version>3.3.1</version>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.cxf</groupId>
+				<artifactId>cxf-codegen-plugin</artifactId>
+				<version>${cxf.version}</version>
+				<executions>
+					<execution>
+						<id>generate-sources</id>
+						<phase>generate-sources</phase>
+						<configuration>
+							<sourceRoot>
+								${project.build.directory}/generated-sources/cxf
+							</sourceRoot>
+							<wsdlOptions>
+								<wsdlOption>
+									<wsdl>
+										${basedir}/src/main/resources/wsdl/InterfaceSQL.wsdl
+									</wsdl>
+									<packagenames>
+										<packagename>fr.insa.soap.wsdltojava</packagename>
+									</packagenames>
+								</wsdlOption>
+							</wsdlOptions>
+						</configuration>
+						<goals>
+							<goal>wsdl2java</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
+
 
 	<dependencyManagement>
 		<dependencies>
@@ -55,15 +95,16 @@
 			<groupId>org.glassfish.jersey.inject</groupId>
 			<artifactId>jersey-hk2</artifactId>
 		</dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-json-binding</artifactId>
-        </dependency>
-       
+		<dependency>
+			<groupId>org.glassfish.jersey.media</groupId>
+			<artifactId>jersey-media-json-binding</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.xml.ws</groupId>
+			<artifactId>jaxws-rt</artifactId>
+			<version>2.3.3</version>
+		</dependency>
 	</dependencies>
-	<properties>
-		<jersey.version>4.0.0-M1</jersey.version>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<war.mvn.plugin.version>3.4.0</war.mvn.plugin.version>
-	</properties>
+	
+
 </project>
