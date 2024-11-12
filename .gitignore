@@ -1,5 +1,6 @@
 .metadata
 Servers/
-LoginProject/
+*/target/
+something/
 ClientWS/
 ExecuteQuery/
