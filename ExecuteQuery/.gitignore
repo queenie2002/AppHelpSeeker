@@ -1,5 +1,6 @@
+/target/
 .metadata
 Servers/
 LoginProject/
-*/target/
-something/
+ClientWS/
+SignUpProject/
