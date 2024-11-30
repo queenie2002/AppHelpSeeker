@@ -2,3 +2,9 @@
 Servers/
 */target/
 something/
+studentManagementMS/
+StudentListService/
+StudentInfoService/
+StudentEvalService/
+ConfigClient/
+SignUpProject/
