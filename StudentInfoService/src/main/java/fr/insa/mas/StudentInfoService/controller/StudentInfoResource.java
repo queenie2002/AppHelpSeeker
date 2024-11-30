@@ -22,46 +22,8 @@ public class StudentInfoResource {
 				new StudentInfos(2,"Azi","Sana", "22/05/1992"),
 				new StudentInfos(3,"Yala","Nelia", "12/06/1994")
 				);
-				
+		System.out.println("Called!");
 		return etudInfos.get(id);
 	}
 	
-	/*
-	@GetMapping("/students/{id}")
-	public Student infosStudent(@PathVariable int id) {
-		return studentList.get(id);
-	}
-	
-	@GetMapping(value="/students/xml/{id}", produces=MediaType.APPLICATION_XML_VALUE)
-	public Student xmlInfosStudent(@PathVariable int id) {
-		return studentList.get(id);
-	}
-	
-	@PostMapping(value="/students/insert/{id}/{firstName}/{lastName}")
-	public int createStudent(@PathVariable int id, @PathVariable String firstName, @PathVariable String lastName) {
-		studentList.put((Integer) id, new Student(id,firstName,lastName));
-        studentList.values().forEach(student -> System.out.println(student.getId() + " " + student.getFirstName() + " " + student.getLastName()));
-		return 200;
-	}
-	
-	@PutMapping(value="/students/update/{id}/{firstName}/{lastName}")
-    public int updateStudent(@PathVariable int id, @PathVariable String firstName, @PathVariable String lastName) {
-        if (!studentList.containsKey(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
-        }
-        studentList.put((Integer) id, new Student(id, firstName, lastName));
-        studentList.values().forEach(student -> System.out.println(student.getId() + " " + student.getFirstName() + " " + student.getLastName()));
-        return 200;
-    }
-	
-	@DeleteMapping(value="/students/delete/{id}")
-    public int deleteStudent(@PathVariable int id, @PathVariable String firstName, @PathVariable String lastName) {
-        if (!studentList.containsKey(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
-        }
-        studentList.remove(id);
-        studentList.values().forEach(student -> System.out.println(student.getId() + " " + student.getFirstName() + " " + student.getLastName()));
-        return 200;
-    }
-	*/
 }
