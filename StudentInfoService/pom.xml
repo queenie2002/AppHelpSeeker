@@ -6,6 +6,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
+		<!-- added to be recognized by eureka; had to change version-->
 		<version>3.4.0-RC1</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
@@ -55,13 +56,13 @@
 
 	</dependencies>
 
-	<!-- added to be recognized by eureka; had to change version, is it normal ? -->
+	<!-- added to be recognized by eureka; had to change version-->
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-dependencies</artifactId>
-				<version>2024.0.0-M2</version>
+				<version>${spring-cloud.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -77,6 +78,7 @@
 		</plugins>
 	</build>
 
+	<!-- added to be recognized by eureka -->
 	<repositories>
 		<repository>
 			<id>spring-milestones</id>
