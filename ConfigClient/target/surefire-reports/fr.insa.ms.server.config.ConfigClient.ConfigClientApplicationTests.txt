@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: fr.insa.ms.server.config.ConfigClient.ConfigClientApplicationTests
--------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.496 s -- in fr.insa.ms.server.config.ConfigClient.ConfigClientApplicationTests
