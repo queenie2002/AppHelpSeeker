@@ -1,6 +1,5 @@
 /target/
 .metadata
-Servers/
-LoginProject/
-ClientWS/
-SignUpProject/
+.project
+.classpath
+.settings/
