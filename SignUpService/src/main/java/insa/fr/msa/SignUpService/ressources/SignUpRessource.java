@@ -29,7 +29,7 @@ public class SignUpRessource {
 	        ResponseEntity<String> response = restTemplate.postForEntity(url, newUser, String.class);
 	        return response.getBody();
 	    } catch (RestClientException e) {
-	        throw new RuntimeException("Failed to call addUser API", e);
+	        throw new RuntimeException("Failed to call UserManagement API", e);
 	    }
 	    		
 	}
