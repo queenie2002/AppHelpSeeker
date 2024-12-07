@@ -25,12 +25,10 @@ import insa.fr.msa.UserManagementService.model.User;
 public class UserManagementRessource {
 
 	private static final Logger logger = LoggerFactory.getLogger(UserManagementRessource.class);
-
+	
+	//Get database login information from the properties file
 	@Value("${db.uri}")
 	private String dbUri;
-
-	@Value("${db.name}")
-	private String dbName;
 
 	@Value("${db.login}")
 	private String dbLogin;
@@ -38,6 +36,7 @@ public class UserManagementRessource {
 	@Value("${db.pwd}")
 	private String dbPwd;
 
+	//Functions to connect and disconnect from database
 	public Connection Connect() {
 		Connection conn;
 		try {
@@ -48,13 +47,25 @@ public class UserManagementRessource {
 		}
 	}
 
+	public void closeConnection(Connection conn) {
+	    if (conn != null) {
+	        try {
+	            conn.close();
+	            System.out.println("Database connection closed successfully.");
+	        } catch (SQLException e) {
+	            System.err.println("Failed to close database connection: " + e.getMessage());
+	        }
+	    }
+	}
+	
+	//Add user, returns the user's ID
 	@PostMapping("/addUser")
-	public String addRequest(@RequestBody User newUser) {
+	public int addRequest(@RequestBody User newUser) {
 		String query = "INSERT INTO users(nom,mdp,status,mail) VALUES (?,?,?,?)";
 		Connection db = Connect();
-		PreparedStatement pstm;
+		PreparedStatement pstm = null;
 		try {
-			pstm = db.prepareStatement(query);
+			pstm = db.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
 			pstm.setString(1, newUser.getNom());
 			pstm.setString(2, newUser.getMdp());
 			pstm.setString(3, newUser.getStatus());
@@ -62,18 +73,31 @@ public class UserManagementRessource {
 
 			pstm.executeUpdate();
 
-			return "Added" + newUser.toString();
+			ResultSet generatedKeys = pstm.getGeneratedKeys();
+	        if (generatedKeys.next()) {
+	            return generatedKeys.getInt(1);
+	        } else {
+	            throw new SQLException("Inserting user failed, no ID obtained.");
+	        }
 		} catch (SQLException e) {
 			throw new RuntimeException("Unable to add user to database with name : " + newUser.getNom(), e);
-		}
+		} finally {
+	        // Close resources
+	        if (pstm != null) {
+	            try {
+	                pstm.close();
+	            } catch (SQLException ignored) {}
+	        }
+	    }
 	}
 
+	//Get a list of all users' information
 	@GetMapping("/users")
 	public List<User> getAllUsers() {
 		List<User> userList = new ArrayList<User>();
 		String query = "SELECT * FROM users";
 		Connection db = Connect();
-		Statement stm;
+		Statement stm = null;
 		try {
 			stm = db.createStatement();
 			ResultSet rs = stm.executeQuery(query);
@@ -86,14 +110,22 @@ public class UserManagementRessource {
 			e.printStackTrace();
 			logger.error("Couldn't getAllUsers");
 			return null;
-		}
+		} finally {
+	        // Close resources
+	        if (stm != null) {
+	            try {
+	            	stm.close();
+	            } catch (SQLException ignored) {}
+	        }
+	    }
 	}
 
+	//Given an ID, get the user's information
 	@GetMapping("/users/{id}")
 	public User getUserInformationById(@PathVariable("id") int id) {
 		String query = "SELECT * FROM users WHERE id = " + id;
 		Connection db = Connect();
-		Statement stm;
+		Statement stm = null;
 		try {
 			stm = db.createStatement();
 			ResultSet rs = stm.executeQuery(query);
@@ -102,19 +134,26 @@ public class UserManagementRessource {
 				return user;
 			}
 			logger.info("Couldn't find a user with id : " + id);
-			return null;
 		} catch (SQLException e) {
 			e.printStackTrace();
 			logger.error("Couldn't getUser with id : " + id);
-		}
+		} finally {
+	        // Close resources
+	        if (stm != null) {
+	            try {
+	            	stm.close();
+	            } catch (SQLException ignored) {}
+	        }
+	    }
 		return null;
 	}
 
+	//Given an ID, deletes the user
 	@DeleteMapping("/delUser/{id}")
 	public String delUser(@PathVariable("id") int id) {
 		String query = "DELETE FROM users WHERE id = " + id;
 		Connection db = Connect();
-		Statement stm;
+		Statement stm = null;
 		try {
 			stm = db.createStatement();
 			stm.executeUpdate(query);
@@ -123,7 +162,14 @@ public class UserManagementRessource {
 			e.printStackTrace();
 			logger.error("Couldn't deleteUser with id : " + id);
 			return "User NOT Deleted";
-		}
+		} finally {
+	        // Close resources
+	        if (stm != null) {
+	            try {
+	            	stm.close();
+	            } catch (SQLException ignored) {}
+	        }
+	    }
 	}
 
 }
