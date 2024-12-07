@@ -35,5 +35,5 @@ build/
 ### Eclipse ###
 .project
 .classpath
-.settings
+.settings/
 target/
