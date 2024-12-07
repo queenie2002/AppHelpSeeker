@@ -41,6 +41,7 @@ public class UserManagementRessource {
 		Connection conn;
 		try {
 			conn = DriverManager.getConnection(dbUri, dbLogin, dbPwd);
+            logger.info("Database connection opened successfully.");
 			return conn;
 		} catch (SQLException e) {
 			throw new RuntimeException("Unable to connect to the database", e);
@@ -51,9 +52,9 @@ public class UserManagementRessource {
 	    if (conn != null) {
 	        try {
 	            conn.close();
-	            System.out.println("Database connection closed successfully.");
+	            logger.info("Database connection closed successfully.");
 	        } catch (SQLException e) {
-	            System.err.println("Failed to close database connection: " + e.getMessage());
+	            logger.error("Failed to close database connection: " + e.getMessage());
 	        }
 	    }
 	}
@@ -64,6 +65,7 @@ public class UserManagementRessource {
 		String query = "INSERT INTO users(nom,mdp,status,mail) VALUES (?,?,?,?)";
 		Connection db = Connect();
 		PreparedStatement pstm = null;
+		int userID;
 		try {
 			pstm = db.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
 			pstm.setString(1, newUser.getNom());
@@ -75,7 +77,7 @@ public class UserManagementRessource {
 
 			ResultSet generatedKeys = pstm.getGeneratedKeys();
 	        if (generatedKeys.next()) {
-	            return generatedKeys.getInt(1);
+	            userID = generatedKeys.getInt(1);
 	        } else {
 	            throw new SQLException("Inserting user failed, no ID obtained.");
 	        }
@@ -86,9 +88,11 @@ public class UserManagementRessource {
 	        if (pstm != null) {
 	            try {
 	                pstm.close();
+	                closeConnection(db);
 	            } catch (SQLException ignored) {}
 	        }
 	    }
+		return userID;
 	}
 
 	//Get a list of all users' information
@@ -105,19 +109,18 @@ public class UserManagementRessource {
 				userList.add(
 						new User(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5)));
 			}
-			return userList;
 		} catch (SQLException e) {
-			e.printStackTrace();
 			logger.error("Couldn't getAllUsers");
-			return null;
+			e.printStackTrace();
 		} finally {
-	        // Close resources
 	        if (stm != null) {
 	            try {
 	            	stm.close();
+	                closeConnection(db);
 	            } catch (SQLException ignored) {}
 	        }
 	    }
+		return userList;
 	}
 
 	//Given an ID, get the user's information
@@ -126,50 +129,51 @@ public class UserManagementRessource {
 		String query = "SELECT * FROM users WHERE id = " + id;
 		Connection db = Connect();
 		Statement stm = null;
+		User user = null;
 		try {
 			stm = db.createStatement();
 			ResultSet rs = stm.executeQuery(query);
 			if (rs.next()) {
-				User user = new User(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5));
-				return user;
+				user = new User(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5));
 			}
 			logger.info("Couldn't find a user with id : " + id);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			logger.error("Couldn't getUser with id : " + id);
 		} finally {
-	        // Close resources
 	        if (stm != null) {
 	            try {
 	            	stm.close();
+	                closeConnection(db);
 	            } catch (SQLException ignored) {}
 	        }
 	    }
-		return null;
+		return user;
 	}
 
 	//Given an ID, deletes the user
 	@DeleteMapping("/delUser/{id}")
-	public String delUser(@PathVariable("id") int id) {
+	public Boolean delUser(@PathVariable("id") int id) {
 		String query = "DELETE FROM users WHERE id = " + id;
 		Connection db = Connect();
 		Statement stm = null;
+		Boolean deleted = false;
 		try {
 			stm = db.createStatement();
 			stm.executeUpdate(query);
-			return "User Deleted";
+			deleted = true;
 		} catch (SQLException e) {
 			e.printStackTrace();
 			logger.error("Couldn't deleteUser with id : " + id);
-			return "User NOT Deleted";
 		} finally {
-	        // Close resources
 	        if (stm != null) {
 	            try {
 	            	stm.close();
+	                closeConnection(db);
 	            } catch (SQLException ignored) {}
 	        }
 	    }
+		return deleted;
 	}
 
 }
