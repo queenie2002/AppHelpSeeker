@@ -73,12 +73,6 @@
     		<version>8.0.33</version>
 		</dependency>
 
-
-		<dependency>
-			<groupId>com.example</groupId>
-			<artifactId>UserListService</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
 	</dependencies>
 	
 	<dependencyManagement>
