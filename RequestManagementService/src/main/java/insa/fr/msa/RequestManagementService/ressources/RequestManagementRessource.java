@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import insa.fr.msa.RequestManagementService.model.Request;
-import insa.fr.msa.UserManagementService.ressources.UserManagementRessource;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -34,7 +33,8 @@ public class RequestManagementRessource {
 	@Value("${db.pwd}")
 	private String dbPwd;
 	
-	//Functions to connect and disconnect from database
+	/*DATABASE DIS/CONNECT-------------------------------------------------------------------------------------------------------------*/
+
 	public Connection Connect() {
 		Connection conn;
 		try {
@@ -57,6 +57,8 @@ public class RequestManagementRessource {
 	    }
 	}
 	
+	/*GET REQUESTS-------------------------------------------------------------------------------------------------------------*/
+
 	//Get all requests
 	@GetMapping("/requests")
 	public List<Request> GetAllRequests() {
@@ -69,7 +71,7 @@ public class RequestManagementRessource {
 			stm = db.createStatement();
 			ResultSet rs = stm.executeQuery(query);
 			while(rs.next()) {
-				requestList.add(new Request(rs.getInt(1),rs.getInt(2),rs.getInt(3),rs.getString(4),rs.getString(5)));
+				requestList.add(new Request(rs.getInt(1),rs.getInt(2),rs.getInt(3),rs.getString(4),rs.getString(5), rs.getString(6)));
 			}
 		} catch (SQLException e) {
 			logger.error("Couldn't getAllRequests");
@@ -85,6 +87,33 @@ public class RequestManagementRessource {
 		return requestList;
 	}
 	
+	//Get requests of user of ID
+	@GetMapping("/requests/user/{id}")
+	public List<Request> getUserRequests(@PathVariable("id") int id){
+		List<Request> listRequest = new ArrayList<Request>();
+		String query = "SELECT * FROM requete WHERE volontaire = " + id + " OR patient = " + id;
+		Connection db = Connect();
+		Statement stm = null;
+		try {
+			stm = db.createStatement();
+			ResultSet rs = stm.executeQuery(query);
+			while(rs.next()) {
+				listRequest.add(new Request(rs.getInt(1),rs.getInt(2),rs.getInt(3),rs.getString(4),rs.getString(5), rs.getString(6)));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.error("Couldn't getRequest");
+		} finally {
+	        if (stm != null) {
+	            try {
+	            	stm.close();
+	                closeConnection(db);
+	            } catch (SQLException ignored) {}
+	        }
+	    }
+		return listRequest;
+	}
+	
 	//Get request, by the ID
 	@GetMapping("/requests/{id}")
 	public Request GetRequestInformationById(@PathVariable("id") int id) {
@@ -97,7 +126,7 @@ public class RequestManagementRessource {
 			stm = db.createStatement();
 			ResultSet rs = stm.executeQuery(query);
 			if(rs.next()) {
-				requete = new Request(rs.getInt(1),rs.getInt(2),rs.getInt(3),rs.getString(4),rs.getString(5));
+				requete = new Request(rs.getInt(1),rs.getInt(2),rs.getInt(3),rs.getString(4),rs.getString(5), rs.getString(6));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -113,20 +142,22 @@ public class RequestManagementRessource {
 		return requete;
 	}
 	
-	//Change request of ID' status to status
-	@PutMapping("/request/{id}/{status}")
-	public Boolean changeRequestStatus(@PathVariable("id") int id , @PathVariable("status") String status) {
-		String query = "UPDATE requete SET status = " + status + " WHERE id = " + id;
+	//Get all requests not verified yet
+	@GetMapping("/unverifiedRequests/")
+	public List<Request> unverifiedRequests() {
+		List<Request> listRequest = new ArrayList<Request>();
+		String query = "SELECT * FROM requete WHERE status ='ATTENTE DE VERIFICATION';";
 		Connection db = Connect();
 		Statement stm = null;
-		Boolean changed = false;
 		try {
 			stm = db.createStatement();
-			stm.executeUpdate(query);
-			changed = true;
+			ResultSet rs = stm.executeQuery(query);
+			while(rs.next()) {
+				listRequest.add(new Request(rs.getInt(1),rs.getInt(2),rs.getInt(3),rs.getString(4),rs.getString(5), rs.getString(6)));
+			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			logger.error("Couldn't changeRequestStatus");
+			logger.error("Couldn't unverifiedRequests");
 		} finally {
 	        if (stm != null) {
 	            try {
@@ -135,14 +166,208 @@ public class RequestManagementRessource {
 	            } catch (SQLException ignored) {}
 	        }
 	    }
-		return changed;
+		return listRequest;
 	}
 	
-	//Accept request rqID of idHelper 
-	@PutMapping("/acceptRequest/{idHelper}/{rqId}")
-	public Boolean  acceptRequest(@PathVariable("idHelper") int idHelper , @PathVariable("rqId") int rqId) {
+	//Get all requests requested by people in need of help that have been verified by admin and not taken by volunteers yet
+	@GetMapping("/acceptedRequestsNeedy/")
+	public List<Request> acceptedRequestsNeedy() {
+		List<Request> listRequest = new ArrayList<Request>();
+		String query = "SELECT * FROM requete WHERE status ='VERIFIEE' AND volontaire IS NULL AND patient IS NOT NULL;";
 		Connection db = Connect();
-		String query = "UPDATE requete SET volontaire = " + idHelper  + " WHERE id = " + rqId;
+		Statement stm = null;
+		try {
+			stm = db.createStatement();
+			ResultSet rs = stm.executeQuery(query);
+			while(rs.next()) {
+				listRequest.add(new Request(rs.getInt(1),rs.getInt(2),rs.getInt(3),rs.getString(4),rs.getString(5), rs.getString(6)));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.error("Couldn't acceptedRequestsNeedy");
+		} finally {
+	        if (stm != null) {
+	            try {
+	            	stm.close();
+	                closeConnection(db);
+	            } catch (SQLException ignored) {}
+	        }
+	    }
+		return listRequest;
+	}
+	
+	//Get all requests requested by volunteers that have been verified by admin and not taken by people in need of help yet
+	@GetMapping("/acceptedRequestsVolunteer/")
+	public List<Request> acceptedRequestsVolunteer() {
+		List<Request> listRequest = new ArrayList<Request>();
+		String query = "SELECT * FROM requete WHERE status ='VERIFIEE' AND volontaire IS NOT NULL AND patient IS NULL;";
+		Connection db = Connect();
+		Statement stm = null;
+		try {
+			stm = db.createStatement();
+			ResultSet rs = stm.executeQuery(query);
+			while(rs.next()) {
+				listRequest.add(new Request(rs.getInt(1),rs.getInt(2),rs.getInt(3),rs.getString(4),rs.getString(5), rs.getString(6)));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.error("Couldn't acceptedRequestsVolunteer");
+		} finally {
+	        if (stm != null) {
+	            try {
+	            	stm.close();
+	                closeConnection(db);
+	            } catch (SQLException ignored) {}
+	        }
+	    }
+		return listRequest;
+	}
+	
+	/*CREATE REQUEST-------------------------------------------------------------------------------------------------------------*/
+
+	//Add request for person in need of help
+	@PostMapping("/addRequestNeedy")
+	public Boolean addRequestNeedy(@RequestBody Request newRequest) {
+		String query ="INSERT INTO requete(patient,status,description) VALUES (?,?,?)";
+		Connection db = Connect();
+		PreparedStatement pstm = null;
+		Boolean added = false;
+		try {
+			pstm = db.prepareStatement(query);
+			pstm.setInt(1, newRequest.getIdNeedy());
+			pstm.setString(2, "ATTENTE DE VERIFICATION");
+			pstm.setString(3, newRequest.getDescription());
+			
+			pstm.executeUpdate();
+			added = true;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.error("Couldn't addRequest");
+		} finally {
+	        if (pstm != null) {
+	            try {
+	            	pstm.close();
+	                closeConnection(db);
+	            } catch (SQLException ignored) {}
+	        }
+	    }
+		return added;
+	}
+	
+	//Add request for person offering help
+	@PostMapping("/addRequestVolunteer")
+	public Boolean addRequestVolunteer(@RequestBody Request newRequest) {
+		String query ="INSERT INTO requete(volontaire,status,description) VALUES (?,?,?)";
+		Connection db = Connect();
+		PreparedStatement pstm = null;
+		Boolean added = false;
+		try {
+			pstm = db.prepareStatement(query);
+			pstm.setInt(1, newRequest.getIdHelper());
+			pstm.setString(2, "ATTENTE DE VERIFICATION");
+			pstm.setString(3, newRequest.getDescription());
+			
+			pstm.executeUpdate();
+			added = true;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.error("Couldn't addRequest");
+		} finally {
+	        if (pstm != null) {
+	            try {
+	            	pstm.close();
+	                closeConnection(db);
+	            } catch (SQLException ignored) {}
+	        }
+	    }
+		return added;
+	}
+	
+	/*VERIFY/REFUSE REQUEST-------------------------------------------------------------------------------------------------------------*/
+	
+	//Admin refuses request of ID and adds a commentary
+	//Admin refuses request of ID
+	@PutMapping("/adminRefuseRequest/{idRq}")
+	public Boolean adminRefuseRequest(@PathVariable("idRq") int idRq, @RequestParam("commentaire") String commentaire) {
+	    String query = "UPDATE requete SET commentaire = ?, status = ? WHERE id = ?";
+		Connection db = Connect();
+		PreparedStatement stmt = null;
+		Boolean refused = false;
+		try {
+			stmt = db.prepareStatement(query);
+			stmt.setString(1, "Refus : " + commentaire); 
+			stmt.setString(2, "REFUSEE"); 
+	        stmt.setInt(3, idRq);
+	        
+	        int rowsUpdated = stmt.executeUpdate();
+	        
+	        if (rowsUpdated > 0) {
+	        	refused = true;
+	        }
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.error("Couldn't adminRefuseRequest");
+		} finally {
+	        if (stmt != null) {
+	            try {
+	            	stmt.close();
+	                closeConnection(db);
+	            } catch (SQLException ignored) {}
+	        }
+	    }
+	    return refused;	    
+	}
+	
+	
+	//Admin verifies request of ID
+	@PutMapping("/adminVerifyRequest/{idRq}")
+	public Boolean adminVerifyRequest(@PathVariable("idRq") int idRq) {
+	    String query = "UPDATE requete SET status = ? WHERE id = ?";
+		Connection db = Connect();
+		PreparedStatement stmt = null;
+		Boolean verified = false;
+		try {
+			stmt = db.prepareStatement(query);
+			stmt.setString(1, "VERIFIEE"); 
+	        stmt.setInt(2, idRq);
+	        
+	        int rowsUpdated = stmt.executeUpdate();
+	        
+	        if (rowsUpdated > 0) {
+	        	verified = true;
+	        }
+		} catch (SQLException e) {
+			e.printStackTrace();
+			logger.error("Couldn't adminVerifyRequest");
+		} finally {
+	        if (stmt != null) {
+	            try {
+	            	stmt.close();
+	                closeConnection(db);
+	            } catch (SQLException ignored) {}
+	        }
+	    }
+	    return verified;	    
+	}
+
+	/*ACCEPT REQUEST-------------------------------------------------------------------------------------------------------------*/
+
+	//Needy/Volunteer accepts a request rqID 
+	@PutMapping("/acceptRequest/{idPerson}/{rqId}")
+	public Boolean  acceptRequest(@PathVariable("idPerson") int idPerson , @PathVariable("rqId") int rqId) {
+		Connection db = Connect();
+		String query = "UPDATE requete\n"
+	             + "SET volontaire = CASE\n"
+	             + "                    WHEN volontaire IS NULL THEN " + idPerson + "\n"
+	             + "                    ELSE volontaire\n"
+	             + "                 END,\n"
+	             + "    patient = CASE\n"
+	             + "               WHEN volontaire IS NOT NULL AND patient IS NULL THEN " + idPerson + "\n"
+	             + "               ELSE patient\n"
+	             + "            END,\n"
+	             + "    status = 'ACCEPTE'\n"
+	             + "WHERE id = " + rqId + ";";
+
 		Statement stm = null;
 		Boolean accepted = false;
 		try {
@@ -163,38 +388,44 @@ public class RequestManagementRessource {
 		return accepted;
 	}
 	
-	//Add request
-	@PostMapping("/addRequest")
-	public Boolean addRequest(@RequestBody Request newRequest) {
-		String query ="INSERT INTO requete(patient,status,description) VALUES (?,?,?)";
+	/*ADD A COMMENTARY-------------------------------------------------------------------------------------------------------------*/
+	
+	//Add a commentary
+	@PutMapping("/addCommentary/{idRq}")
+	public Boolean addCommentary(@PathVariable("idRq") int idRq, @RequestParam("commentaire") String commentaire) {
+	    String query = "UPDATE requete SET commentaire = ? WHERE id = ?";
 		Connection db = Connect();
-		PreparedStatement pstm = null;
+		PreparedStatement stmt = null;
 		Boolean added = false;
 		try {
-			pstm = db.prepareStatement(query);
-			pstm.setInt(1, newRequest.getIdNeedy());
-			pstm.setString(2, "WAITING FOR HELPER");
-			pstm.setString(3, newRequest.getDescription());
-			
-			pstm.executeUpdate();
-			added = true;
+			stmt = db.prepareStatement(query);
+			stmt.setString(1, "Refus : " + commentaire); 
+	        stmt.setInt(2, idRq);
+	        
+	        int rowsUpdated = stmt.executeUpdate();
+	        
+	        if (rowsUpdated > 0) {
+	        	added = true;
+	        }
 		} catch (SQLException e) {
 			e.printStackTrace();
-			logger.error("Couldn't addRequest");
+			logger.error("Couldn't addCommentary");
 		} finally {
-	        if (pstm != null) {
+	        if (stmt != null) {
 	            try {
-	            	pstm.close();
+	            	stmt.close();
 	                closeConnection(db);
 	            } catch (SQLException ignored) {}
 	        }
 	    }
-		return added;
+	    return added;	    
 	}
 	
-	//Delete request of ID
-	@DeleteMapping("/delRequest/{id}")
-	public Boolean delRequest(@PathVariable("id") int id) {
+	/*DELETE REQUEST-----------------------------------------------------------------------------------------------------------*/
+	
+	//Delete a request of ID
+	@DeleteMapping("/deleteRequest/{id}")
+	public Boolean deleteRequest(@PathVariable("id") int id) {
 		String query = "DELETE FROM requete WHERE id = " + id;
 		Connection db = Connect();
 		Statement stm = null;
@@ -217,22 +448,20 @@ public class RequestManagementRessource {
 		return deleted;
 	}
 	
-	//Get request of user of ID
-	@GetMapping("/requests/user/{id}")
-	public List<Request> getUserRequests(@PathVariable("id") int id){
-		List<Request> listRequest = new ArrayList<Request>();
-		String query = "SELECT * FROM requete WHERE volontaire = " + id + " OR patient = " + id;
+	//Delete all requests
+	@DeleteMapping("/deleteAllRequests")
+	public Boolean deleteAllRequests() {
+		String query = "DELETE FROM requete";
 		Connection db = Connect();
 		Statement stm = null;
+		Boolean deleted = false;
 		try {
 			stm = db.createStatement();
-			ResultSet rs = stm.executeQuery(query);
-			while(rs.next()) {
-				listRequest.add(new Request(rs.getInt(1),rs.getInt(2),rs.getInt(3),rs.getString(4),rs.getString(5)));
-			}
+			stm.executeUpdate(query);
+			deleted = true;
 		} catch (SQLException e) {
 			e.printStackTrace();
-			logger.error("Couldn't getRequest");
+			logger.error("Couldn't deleteAllRequests");
 		} finally {
 	        if (stm != null) {
 	            try {
@@ -241,38 +470,7 @@ public class RequestManagementRessource {
 	            } catch (SQLException ignored) {}
 	        }
 	    }
-		return listRequest;
-	}
-	
-	//Refuse request of ID
-	@PutMapping("/refuseRequest/{idRq}")
-	public Boolean refuseRequest(@PathVariable("idRq") int idRq, @RequestParam("commentaire") String commentaire) {
-	    String query = "UPDATE requete SET description = ? WHERE id = ?";
-		Connection db = Connect();
-		PreparedStatement stmt = null;
-		Boolean refused = false;
-		try {
-			stmt = db.prepareStatement(query);
-			stmt.setString(1, "Refus : " + commentaire); 
-	        stmt.setInt(2, idRq);
-	        
-	        int rowsUpdated = stmt.executeUpdate();
-	        
-	        if (rowsUpdated > 0) {
-	        	refused = true;
-	        }
-		} catch (SQLException e) {
-			e.printStackTrace();
-			logger.error("Couldn't refuseRequest");
-		} finally {
-	        if (stmt != null) {
-	            try {
-	            	stmt.close();
-	                closeConnection(db);
-	            } catch (SQLException ignored) {}
-	        }
-	    }
-	    return refused;	    
+		return deleted;
 	}
 
 }

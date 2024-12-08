@@ -6,13 +6,15 @@ public class Request {
 	private int idHelper;
 	private String RqStatus;
 	private String Description;
+	private String commentaire;
 	
-	public Request(int idRequest,int idNeedy,int idHelper,String RqStatus,String Description) {
+	public Request(int idRequest,int idNeedy,int idHelper,String RqStatus,String Description, String commentaire) {
 		this.idRequest = idRequest;
 		this.idNeedy = idNeedy;
 		this.idHelper = idHelper;
 		this.RqStatus = RqStatus;
 		this.Description = Description;
+		this.commentaire = commentaire;
 	}
 
 	public Request(int idNeedy,int idHelper,String RqStatus,String Description) {
@@ -22,9 +24,9 @@ public class Request {
 		this.Description = Description;
 	}
 	
-	public Request(int idNeedy,String RqStatus,String Description) {
+	public Request(int idNeedy,int idHelper, String Description) {
 		this.idNeedy = idNeedy;
-		this.RqStatus = RqStatus;
+		this.idHelper = idHelper;
 		this.Description = Description;
 	}
 
@@ -71,7 +73,17 @@ public class Request {
 		Description = description;
 	}
 	
-	public String ToString() {
-		return "Request --> Request_id : " + this.idRequest + " RequestNeedyID : " + this.idNeedy + " RequestHelerId : " + this.idHelper + " RequestStatus : " + this.RqStatus + " RequestDescription : " + this.Description;
+	public String getCommentaire() {
+		return commentaire;
+	}
+
+	public void setCommentaire(String commentaire) {
+		this.commentaire = commentaire;
+	}
+
+	@Override
+	public String toString() {
+		return "Request [idRequest=" + idRequest + ", idNeedy=" + idNeedy + ", idHelper=" + idHelper + ", RqStatus="
+				+ RqStatus + ", Description=" + Description + ", commentaire=" + commentaire + "]";
 	}
 }
