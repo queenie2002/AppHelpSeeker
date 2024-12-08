@@ -1,10 +1,10 @@
-package insa.fr.msa.SignUpService;
+package insa.fr.msa.OrchestratorService;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class SignUpServiceApplicationTests {
+class OrchestratorServiceApplicationTests {
 
 	@Test
 	void contextLoads() {

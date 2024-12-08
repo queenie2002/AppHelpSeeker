@@ -1,4 +1,4 @@
-package insa.fr.msa.RequestManagementService.model;
+package insa.fr.msa.OrchestratorService.model;
 
 public class Request {
 	private int idRequest;
