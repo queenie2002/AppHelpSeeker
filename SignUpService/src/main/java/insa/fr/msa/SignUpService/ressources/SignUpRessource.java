@@ -21,12 +21,12 @@ public class SignUpRessource {
 	private RestTemplate restTemplate;
 	
 	@PostMapping("/signUpUser")
-	public String signUpUser(@RequestBody User newUser) {
+	public Integer signUpUser(@RequestBody User newUser) {
 		
 		String url = "http://UserManagement-Service/addUser";
 
 	    try {
-	        ResponseEntity<String> response = restTemplate.postForEntity(url, newUser, String.class);
+	        ResponseEntity<Integer> response = restTemplate.postForEntity(url, newUser, Integer.class);
 	        return response.getBody();
 	    } catch (RestClientException e) {
 	        throw new RuntimeException("Failed to call UserManagement API", e);

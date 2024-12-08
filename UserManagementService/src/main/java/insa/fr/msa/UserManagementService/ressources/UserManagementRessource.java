@@ -61,11 +61,11 @@ public class UserManagementRessource {
 	
 	//Add user, returns the user's ID
 	@PostMapping("/addUser")
-	public int addRequest(@RequestBody User newUser) {
+	public Integer addRequest(@RequestBody User newUser) {
 		String query = "INSERT INTO users(nom,mdp,status,mail) VALUES (?,?,?,?)";
 		Connection db = Connect();
 		PreparedStatement pstm = null;
-		int userID;
+		Integer userID;
 		try {
 			pstm = db.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
 			pstm.setString(1, newUser.getNom());
