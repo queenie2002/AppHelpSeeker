@@ -152,7 +152,7 @@ public class UserManagementRessource {
 	}
 
 	//Given an ID, deletes the user
-	@DeleteMapping("/delUser/{id}")
+	@DeleteMapping("/deleteUser/{id}")
 	public Boolean delUser(@PathVariable("id") int id) {
 		String query = "DELETE FROM users WHERE id = " + id;
 		Connection db = Connect();
